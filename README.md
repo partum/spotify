@@ -18,7 +18,7 @@ I've always wanted a way to quickly add all of an artist's catalogue to my queue
 
 ### To Do
 - allow the user to search for any artist
-- search for albums instead of tracks
+- search for albums instead of tracks ✅
 -- make sure this is an unlimited list of albums
 
 

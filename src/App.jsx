@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import { requestClientCredentialsToken, searchTracks } from './spotifyApi'
+import { requestClientCredentialsToken, searchAlbums } from './spotifyApi'
 import './App.css'
 
 function App() {
   // const [clientId, setClientId] = useState('') //import from .env
   // const [clientSecret, setClientSecret] = useState('') //import from .env
   const [accessToken, setAccessToken] = useState('')
-  const [tracks, setTracks] = useState([])
+  const [albums, setAlbums] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -39,13 +39,15 @@ function App() {
   useEffect(() => {
     if (!accessToken) return
 
-    async function loadTracks() {
+    async function loadAlbums() {
       setLoading(true)
       setError(null)
 
       try {
-        const data = await searchTracks('Daft Punk', accessToken)
-        setTracks(data.tracks.items)
+        const data = await searchAlbums('Daft Punk', accessToken)
+        console.log('Spotify search results:', data.albums.items) // Log the full response to debug
+        const albumNames = data.albums.items
+        setAlbums(albumNames) // Update to set album names instead of albums
       } catch (err) {
         setError(err.message)
       } finally {
@@ -53,7 +55,7 @@ function App() {
       }
     }
 
-    loadTracks()
+    loadAlbums()
   }, [accessToken])
 
   return (
@@ -64,9 +66,9 @@ function App() {
       {error && <p className="error">{error}</p>}
 
       <ul>
-        {tracks.map((track) => (
-          <li key={track.id}>
-            {track.name} — {track.artists.map((artist) => artist.name).join(', ')}
+        {albums.map((album) => (
+          <li key={album.id}>
+            {album.name}
           </li>
         ))}
       </ul>
