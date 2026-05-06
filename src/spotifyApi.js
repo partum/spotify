@@ -49,7 +49,7 @@ export async function callSpotifyApi(endpoint, accessToken, method = 'GET', body
 
 export function searchAlbums(query, accessToken) {
   const encoded = encodeURIComponent(query)
-  return callSpotifyApi(`/search?q=${encoded}&type=album&limit=10`, accessToken) //this part is limiting it to 10 albums
+  return callSpotifyApi(`/search?q=${encoded}&type=album&limit=10&offset=0`, accessToken) //the max is 10 
 }
 
 export function getCurrentUserProfile(accessToken) {
