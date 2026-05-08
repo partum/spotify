@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { requestClientCredentialsToken, searchAlbums } from './spotifyApi'
+import { requestClientCredentialsToken, searchAlbums, searchArtists } from './spotifyApi'
 import './App.css'
 
 function App() {
@@ -11,6 +11,7 @@ function App() {
   const [error, setError] = useState(null)
   const [searchQuery, setSearchQuery] = useState('Daft Punk') // Default search query
   const [totalAlbums, setTotalAlbums] = useState(0) // State to hold total albums count
+  const [artist, setArtist] = useState('')
 
   const clientId = import.meta.env.VITE_CLIENT_ID
   const clientSecret = import.meta.env.VITE_CLIENT_SECRET
@@ -46,11 +47,11 @@ function App() {
       setError(null)
 
       try {
-        const data = await searchAlbums(searchQuery, accessToken)
-        console.log('Spotify search results:', data.artists) // Log the full response to debug
-        const albumNames = data.albums.items
+        const data = await searchAlbums(artist, accessToken)
+        console.log('Spotify album search results:', data) // Log the full response to debug
+        const albumNames = data.items
         setAlbums(albumNames) // Update to set album names instead of albums
-        setTotalAlbums(data.albums.total) // Update total albums count
+        setTotalAlbums(data.total) // Update total albums count
       } catch (err) {
         setError(err.message)
       } finally {
@@ -59,7 +60,32 @@ function App() {
     }
 
     loadAlbums()
+  }, [artist])
+
+  useEffect(() => {
+    if (!accessToken) return
+
+    async function loadArtist() {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const data = await searchArtists(searchQuery, accessToken)
+        console.log('Spotify artist search results:', data.artists) // Log the full response to debug
+        const artistName = data.artists.items[0].id
+        setArtist(artistName) // Update to set artist name
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadArtist()
   }, [accessToken, searchQuery])
+
+
+
 
   return (
     <main className="app">

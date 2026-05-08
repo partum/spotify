@@ -47,9 +47,14 @@ export async function callSpotifyApi(endpoint, accessToken, method = 'GET', body
   return response.json()
 }
 
-export function searchAlbums(query, accessToken) {
+export function searchAlbums(artistID, accessToken) {
+  const encoded = encodeURIComponent(artistID)
+  return callSpotifyApi(`/artists/${encoded}/albums?offset=0&limit=10&locale=en-US,en;q%3D0.9&include_groups=album`, accessToken) //does this include EPs?
+}
+
+export function searchArtists(query, accessToken) {
   const encoded = encodeURIComponent(query)
-  return callSpotifyApi(`/search?q=${encoded}&type=album&limit=10&offset=0`, accessToken) //the max is 10 
+  return callSpotifyApi(`/search?q=${encoded}&type=artist&offset=0`, accessToken)  
 }
 
 export function getCurrentUserProfile(accessToken) {
