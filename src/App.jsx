@@ -1,56 +1,77 @@
 import { useEffect, useState } from 'react'
-import { requestClientCredentialsToken, searchAlbums, searchArtists, getTracks, sendToQueue, requestAuthorization } from './spotifyApi'
+import {
+  requestAuthorization,
+  exchangeCodeForToken,
+  searchAlbums,
+  searchArtists,
+  getTracks,
+  sendToQueue,
+} from './spotifyApi'
 import './App.css'
 
 function App() {
-  const [accessToken, setAccessToken] = useState('')
+  const [accessToken, setAccessToken] = useState(() => window.localStorage.getItem('access_token') || '')
   const [albums, setAlbums] = useState([])
   const [albumIds, setAlbumIds] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [searchQuery, setSearchQuery] = useState('Daft Punk') // Default search query
-  const [totalAlbums, setTotalAlbums] = useState(0) // State to hold total albums count
+  const [searchQuery, setSearchQuery] = useState('Daft Punk')
+  const [totalAlbums, setTotalAlbums] = useState(0)
   const [artist, setArtist] = useState('')
   const [next, setNext] = useState(null)
   const [trackTest, setTrackTest] = useState(null)
 
   const clientId = import.meta.env.VITE_CLIENT_ID
-  const clientSecret = import.meta.env.VITE_CLIENT_SECRET
+  const redirectUri = 'https://spotify-tool.netlify.app/'
 
   useEffect(() => {
-  const code = new URLSearchParams(window.location.search).get('code')
-  if (!accessToken && !code) {
-    requestAuthorization()
-  }
-  if (!accessToken && code) {
-    exchangeCodeForToken(code, clientId, redirectUri).then(token => { // I don't think this function exists
-      setAccessToken(token)
-      window.history.replaceState({}, '', window.location.pathname)
-    })
-  }
-}, [accessToken])
+    const code = new URLSearchParams(window.location.search).get('code')
+    if (accessToken) return
 
-  useEffect(() => {
-    async function init() {
-      if (!clientId || !clientSecret) {
-        setError('Missing Spotify client credentials. Check your .env values.')
+    async function finishAuth() {
+      if (code) {
+        setLoading(true)
+        setError(null)
+        try {
+          const token = await exchangeCodeForToken(code, clientId, redirectUri)
+          setAccessToken(token)
+          window.localStorage.setItem('access_token', token)
+          window.history.replaceState({}, '', window.location.pathname)
+        } catch (err) {
+          setError(err.message)
+        } finally {
+          setLoading(false)
+        }
         return
       }
 
-      setLoading(true)
-      setError(null)
-
-      try {
-        const token = await requestClientCredentialsToken(clientId, clientSecret)
-        setAccessToken(token)
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
+      if (!clientId) {
+        setError('Missing Spotify client ID. Check your .env values.')
+        return
       }
+      await requestAuthorization(clientId, redirectUri)
     }
 
-    init()
+    finishAuth()
+  }, [accessToken, clientId, redirectUri])
+
+  useEffect(() => {
+    if (!clientId || !clientSecret) {
+      setError('Missing Spotify client credentials. Check your .env values.')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const token = await requestClientCredentialsToken(clientId, clientSecret)
+      setAccessToken(token)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }, [clientId, clientSecret])
 
   useEffect(() => {
@@ -197,3 +218,28 @@ function loadMoreAlbums() {
 }
 
 export default App
+
+export async function exchangeCodeForToken(code, clientId, redirectUri) {
+  const codeVerifier = localStorage.getItem('code_verifier')
+  if (!codeVerifier) throw new Error('Missing PKCE code verifier in localStorage.')
+
+  const response = await fetch(SPOTIFY_AUTH_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: clientId,
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: redirectUri,
+      code_verifier: codeVerifier,
+    }),
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Spotify token exchange error: ${response.status} ${response.statusText} - ${errorText}`)
+  }
+
+  const data = await response.json()
+  return data.access_token
+}
