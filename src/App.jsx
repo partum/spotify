@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
-import { requestClientCredentialsToken, searchAlbums, searchArtists, getTracks, sendToQueue } from './spotifyApi'
+import { requestClientCredentialsToken, searchAlbums, searchArtists, getTracks, sendToQueue, requestAuthorization } from './spotifyApi'
 import './App.css'
 
 function App() {
-  // const [clientId, setClientId] = useState('') //import from .env
-  // const [clientSecret, setClientSecret] = useState('') //import from .env
   const [accessToken, setAccessToken] = useState('')
   const [albums, setAlbums] = useState([])
   const [albumIds, setAlbumIds] = useState([])
@@ -18,6 +16,10 @@ function App() {
 
   const clientId = import.meta.env.VITE_CLIENT_ID
   const clientSecret = import.meta.env.VITE_CLIENT_SECRET
+
+  useEffect(() => {
+    requestAuthorization()
+  }, [accessToken])
 
   useEffect(() => {
     async function init() {

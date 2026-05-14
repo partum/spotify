@@ -68,18 +68,17 @@ export function sendToQueue(trackId, accessToken) {
   
 }
 
-export function getCurrentUserProfile(accessToken) {
+export function getCurrentUserProfile(accessToken) { 
   return callSpotifyApi('/me', accessToken)
 }
 
 /////Authorization Code with PKCE Flow/////
 //Code Verifier
-const generateRandomString = (length) => {
+  const generateRandomString = (length) => {
   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const values = crypto.getRandomValues(new Uint8Array(length));
   return values.reduce((acc, x) => acc + possible[x % possible.length], "");
 }
-
 const codeVerifier  = generateRandomString(64);
 //Code Challenge
 const sha256 = async (plain) => {
@@ -95,7 +94,10 @@ const base64encode = (input) => {
 }
 const hashed = await sha256(codeVerifier)
 const codeChallenge = base64encode(hashed);
-//request user authorization
+
+
+export function requestAuthorization() {
+  //request user authorization
 const clientId = import.meta.env.VITE_CLIENT_ID
 const redirectUri = 'https://spotify-tool.netlify.app/' 
 
@@ -145,5 +147,9 @@ const getToken = async code => {
 
   localStorage.setItem('access_token', response.access_token);
 }
+}
+
+
+
 
 
