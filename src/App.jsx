@@ -18,8 +18,17 @@ function App() {
   const clientSecret = import.meta.env.VITE_CLIENT_SECRET
 
   useEffect(() => {
+  const code = new URLSearchParams(window.location.search).get('code')
+  if (!accessToken && !code) {
     requestAuthorization()
-  }, [accessToken])
+  }
+  if (!accessToken && code) {
+    exchangeCodeForToken(code, clientId, redirectUri).then(token => { // I don't think this function exists
+      setAccessToken(token)
+      window.history.replaceState({}, '', window.location.pathname)
+    })
+  }
+}, [accessToken])
 
   useEffect(() => {
     async function init() {
