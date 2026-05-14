@@ -97,7 +97,7 @@ const hashed = await sha256(codeVerifier)
 const codeChallenge = base64encode(hashed);
 //request user authorization
 const clientId = import.meta.env.VITE_CLIENT_ID
-const redirectUri = 'https://www.spotify.com' 
+const redirectUri = 'https://spotify-tool.netlify.app/' 
 
 const scope = 'user-read-private user-read-email';
 const authUrl = new URL("https://accounts.spotify.com/authorize")
