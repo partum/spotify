@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
+  requestClientCredentialsToken,
   searchAlbums,
   searchArtists,
   getTracks,
@@ -34,7 +35,7 @@ function App() {
     setError(null)
 
     try {
-      const token = requestClientCredentialsToken(clientId, clientSecret)
+      const token = await requestClientCredentialsToken(clientId, clientSecret)
       setAccessToken(token)
     } catch (err) {
       setError(err.message)
