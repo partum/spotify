@@ -94,7 +94,7 @@ export function requestAuthorization(clientId, redirectUri) {
       .replace(/\//g, '_')
   }
 
-  const hashed = await sha256(codeVerifier)
+  const hashed = sha256(codeVerifier)
   const codeChallenge = base64encode(hashed)
 
   window.localStorage.setItem('code_verifier', codeVerifier)
