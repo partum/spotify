@@ -22,7 +22,7 @@ function App() {
   const [trackTest, setTrackTest] = useState(null)
 
   const clientId = import.meta.env.VITE_CLIENT_ID
-  const redirectUri = 'https://spotify-tool.netlify.app/'
+  const redirectUri = 'https://spotify-tool.netlify.app/redirect' // Must match the redirect URI registered in your Spotify app settings
 
   useEffect(() => {
     const code = new URLSearchParams(window.location.search).get('code')
@@ -65,7 +65,7 @@ function App() {
     setError(null)
 
     try {
-      const token = await requestClientCredentialsToken(clientId, clientSecret)
+      const token = requestClientCredentialsToken(clientId, clientSecret)
       setAccessToken(token)
     } catch (err) {
       setError(err.message)
