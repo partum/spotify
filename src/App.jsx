@@ -35,7 +35,7 @@ function App() {
     setError(null)
 
     try {
-      const token = await requestClientCredentialsToken(clientId, clientSecret)
+      const token = requestClientCredentialsToken(clientId, clientSecret)
       setAccessToken(token)
     } catch (err) {
       setError(err.message)
