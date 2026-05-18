@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import {
-  requestAuthorization,
   exchangeCodeForToken,
   searchAlbums,
   searchArtists,
@@ -23,37 +22,7 @@ function App() {
 
   const clientId = import.meta.env.VITE_CLIENT_ID
   const redirectUri = 'https://spotify-tool.netlify.app/redirect' // Must match the redirect URI registered in your Spotify app settings
-
-  useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get('code')
-    if (accessToken) return
-
-    async function finishAuth() {
-      if (code) {
-        setLoading(true)
-        setError(null)
-        try {
-          const token = await exchangeCodeForToken(code, clientId, redirectUri)
-          setAccessToken(token)
-          window.localStorage.setItem('access_token', token)
-          window.history.replaceState({}, '', window.location.pathname)
-        } catch (err) {
-          setError(err.message)
-        } finally {
-          setLoading(false)
-        }
-        return
-      }
-
-      if (!clientId) {
-        setError('Missing Spotify client ID. Check your .env values.')
-        return
-      }
-      await requestAuthorization(clientId, redirectUri)
-    }
-
-    finishAuth()
-  }, [accessToken, clientId, redirectUri])
+  
 
   useEffect(() => {
     if (!clientId || !clientSecret) {
