@@ -20,6 +20,7 @@ function App() {
   const [trackTest, setTrackTest] = useState(null)
 
   const clientId = import.meta.env.VITE_CLIENT_ID
+  const clientSecret = import.meta.env.VITE_CLIENT_SECRET
   const redirectUri = 'https://spotify-tool.netlify.app/redirect' // Must match the redirect URI registered in your Spotify app settings
 
 
