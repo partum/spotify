@@ -219,27 +219,4 @@ function loadMoreAlbums() {
 
 export default App
 
-export async function exchangeCodeForToken(code, clientId, redirectUri) {
-  const codeVerifier = localStorage.getItem('code_verifier')
-  if (!codeVerifier) throw new Error('Missing PKCE code verifier in localStorage.')
 
-  const response = await fetch(SPOTIFY_AUTH_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      client_id: clientId,
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: redirectUri,
-      code_verifier: codeVerifier,
-    }),
-  })
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`Spotify token exchange error: ${response.status} ${response.statusText} - ${errorText}`)
-  }
-
-  const data = await response.json()
-  return data.access_token
-}
