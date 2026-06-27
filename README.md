@@ -18,9 +18,10 @@ I've always wanted a way to quickly add all of an artist's catalogue to my queue
 
 ### To Do
 -- make sure this is an unlimited list of albums!
--- I am now hosting but there is a build error
+-- I am trying to update the authenticator but I broke the search
 
 url: https://spotify-tool.netlify.app/
+redirect url: https://spotify-tool.netlify.app/callback
 
 
 

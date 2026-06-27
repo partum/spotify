@@ -22,8 +22,7 @@ function App() {
 
   const clientId = import.meta.env.VITE_CLIENT_ID
   const clientSecret = import.meta.env.VITE_CLIENT_SECRET
-  const redirectUri = 'https://spotify-tool.netlify.app/redirect' // Must match the redirect URI registered in your Spotify app settings
-
+  const redirectUri = typeof window !== 'undefined' ? `${window.location.origin}/callback` : 'https://spotify-tool.netlify.app/callback'
 
   useEffect(() => {
     if (!clientId || !clientSecret) {
@@ -31,16 +30,33 @@ function App() {
       return
     }
 
-    setLoading(true)
-    setError(null)
+    let isMounted = true
 
-    try {
-      const token = requestClientCredentialsToken(clientId, clientSecret)
-      setAccessToken(token)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+    async function loadToken() {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const token = await requestClientCredentialsToken(clientId, clientSecret)
+        if (isMounted) {
+          setAccessToken(token)
+          window.localStorage.setItem('access_token', token)
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err.message)
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadToken()
+
+    return () => {
+      isMounted = false
     }
   }, [clientId, clientSecret])
 
@@ -155,10 +171,6 @@ function loadMoreAlbums() {
 
     loadTracks()
   }, [albumIds, accessToken])
-
-  const foo = localStorage.getItem('access_token'); // returns 'myValue'
-  console.log('Access token from localStorage:', foo) // Log the retrieved access token for debugging
-
 
   return (
     <main className="app">
