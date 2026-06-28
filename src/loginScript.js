@@ -1,14 +1,15 @@
-const clientId = import.meta.env.VITE_CLIENT_ID;
 const redirectUri = `${window.location.origin}/callback`;
-const params = new URLSearchParams(window.location.search);
-const code = params.get("code");
 
-if (!code) {
-    redirectToAuthCodeFlow(clientId);
-} else {
+export async function handleCallbackRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const clientId = import.meta.env.VITE_CLIENT_ID;
+
+    if (!code || !clientId) return null;
+
     const accessToken = await getAccessToken(clientId, code);
-    const profile = await fetchProfile(accessToken);
-    populateUI(profile);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    return accessToken;
 }
 
 export async function redirectToAuthCodeFlow(clientId) {
@@ -21,7 +22,7 @@ export async function redirectToAuthCodeFlow(clientId) {
     params.append("client_id", clientId);
     params.append("response_type", "code");
     params.append("redirect_uri", redirectUri);
-    params.append("scope", "user-read-private user-read-email user-modify-playback-state");
+    params.append("scope", "user-read-private user-read-email user-modify-playback-state user-library-modify");
     params.append("code_challenge_method", "S256");
     params.append("code_challenge", challenge);
 

@@ -65,7 +65,15 @@ export function getTracks(albumID, accessToken) {
 export function sendToQueue(trackId, accessToken) {
   const encoded = encodeURIComponent(trackId)
   return callSpotifyApi(`/me/player/queue?uri=spotify%3Atrack%3A${encoded}`, accessToken, 'POST')
+}
 
+export function saveAlbumsToLibrary(albumIds, accessToken) {
+  if (!Array.isArray(albumIds) || albumIds.length === 0) {
+    throw new Error('albumIds must be a non-empty array.')
+  }
+
+  const encodedIds = encodeURIComponent(albumIds.join(','))
+  return callSpotifyApi(`/me/albums?ids=${encodedIds}`, accessToken, 'PUT')
 }
 
 export function getCurrentUserProfile(accessToken) {

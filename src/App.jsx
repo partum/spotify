@@ -5,17 +5,22 @@ import {
   searchArtists,
   getTracks,
   sendToQueue,
+  saveAlbumsToLibrary,
 } from './spotifyApi'
+import { redirectToAuthCodeFlow, handleCallbackRedirect } from './loginScript'
 import './App.css'
+import AlbumList from './components/AlbumList'
 
 function App() {
   const [accessToken, setAccessToken] = useState(() => window.localStorage.getItem('access_token') || '')
+  const [userAccessToken, setUserAccessToken] = useState(() => window.localStorage.getItem('user_access_token') || '')
   const [albums, setAlbums] = useState([])
   const [albumIds, setAlbumIds] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [searchQuery, setSearchQuery] = useState('Daft Punk')
-  const [totalAlbums, setTotalAlbums] = useState(0)
+  const [saveStatus, setSaveStatus] = useState('')
+  //const [totalAlbums, setTotalAlbums] = useState(0)
   const [artist, setArtist] = useState('')
   const [next, setNext] = useState(null)
   const [trackTest, setTrackTest] = useState(null)
@@ -61,6 +66,23 @@ function App() {
   }, [clientId, clientSecret])
 
   useEffect(() => {
+    async function initUserToken() {
+      if (userAccessToken) return
+      try {
+        const token = await handleCallbackRedirect()
+        if (token) {
+          setUserAccessToken(token)
+          window.localStorage.setItem('user_access_token', token)
+        }
+      } catch (err) {
+        setError(err.message)
+      }
+    }
+
+    initUserToken()
+  }, [userAccessToken])
+
+  useEffect(() => {
     if (!accessToken || !artist) return
 
     async function loadAlbums() {
@@ -69,19 +91,11 @@ function App() {
 
       try {
         const data = await searchAlbums(artist, accessToken)
-        //console.log('Spotify album search results:', data) // Log the full response to debug
         const albumNames = data.items
-        setAlbums(albumNames) 
-        setTotalAlbums(data.total) 
+        setAlbums(albumNames)
+        //setTotalAlbums(data.total)
         setAlbumIds(albumNames.map(album => album.id)) // Store album IDs for later use
         setNext(data.next) // Store the next URL for pagination
-        //let nextVar = data.next
-        // while (nextVar) {
-        //   const nextData = await searchAlbums(artist, accessToken, albums.length) // Pass current offset
-        //   setAlbums(prevAlbums => [...prevAlbums, ...nextData.items]) // Append new albums to existing list
-        //   setTotalAlbums(nextData.total) // Update total albums count (should be the same)
-        //   nextVar = nextData.next // Update nextVar for the next iteration
-        // }
       } catch (err) {
         setError(err.message)
       } finally {
@@ -101,9 +115,8 @@ function App() {
 
       try {
         const data = await searchArtists(searchQuery, accessToken)
-        //console.log('Spotify artist search results:', data.artists) // Log the full response to debug
         const artistName = data.artists.items[0].id
-        setArtist(artistName) // Update to set artist name
+        setArtist(artistName) 
       } catch (err) {
         setError(err.message)
       } finally {
@@ -114,9 +127,9 @@ function App() {
     loadArtist()
   }, [accessToken, searchQuery])
 
-function loadMoreAlbums() {
-  if (!next) return // No more albums to load
-}
+  function loadMoreAlbums() {
+    if (!next) return // No more albums to load
+  }
 
   useEffect(() => {
     if (!accessToken || !artist) return
@@ -127,19 +140,11 @@ function loadMoreAlbums() {
 
       try {
         const data = await searchAlbums(artist, accessToken)
-        //console.log('Spotify album search results:', data) // Log the full response to debug
         const albumNames = data.items
-        setAlbums(albumNames) 
-        setTotalAlbums(data.total) 
+        setAlbums(albumNames)
+        //setTotalAlbums(data.total)
         setAlbumIds(albumNames.map(album => album.id)) // Store album IDs for later use
         setNext(data.next) // Store the next URL for pagination
-        //let nextVar = data.next
-        // while (nextVar) {
-        //   const nextData = await searchAlbums(artist, accessToken, albums.length) // Pass current offset
-        //   setAlbums(prevAlbums => [...prevAlbums, ...nextData.items]) // Append new albums to existing list
-        //   setTotalAlbums(nextData.total) // Update total albums count (should be the same)
-        //   nextVar = nextData.next // Update nextVar for the next iteration
-        // }
       } catch (err) {
         setError(err.message)
       } finally {
@@ -172,29 +177,64 @@ function loadMoreAlbums() {
     loadTracks()
   }, [albumIds, accessToken])
 
+  async function handleLogin() {
+    redirectToAuthCodeFlow(clientId)
+  }
+
+  async function handleSaveAlbums() {
+    if (!userAccessToken) {
+      setError('Please login with Spotify to save albums to your library.')
+      return
+    }
+
+    if (albumIds.length === 0) {
+      setError('No albums are loaded yet to save.')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+    setSaveStatus('')
+
+    try {
+      await saveAlbumsToLibrary(albumIds, userAccessToken)
+      setSaveStatus('Saved loaded albums to your Spotify library.')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <main className="app">
       <h1>Spotify Tool</h1>
       <form onSubmit={(e) => e.preventDefault()}>
-         <input 
-          type="text" 
-          placeholder="Enter artist name..." 
-          value={searchQuery} 
-          onChange={(e) => setSearchQuery(e.target.value)} 
+        <input
+          type="text"
+          placeholder="Enter artist name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
       </form>
-      {loading && <p>Loading...</p>}
-      {error && <p className="error">{error}</p>}
-      <p>There are {totalAlbums} full length albums</p>
-       <button >Add More</button>
-      <ol>
-        {albums.map((album) => (
-          <li key={album.id}>
-            {album.name}
-          </li>
-        ))}
-      </ol>
-      <button onClick={() => sendToQueue(trackTest, accessToken)}>Add to Queue</button>
+      <AlbumList loading={loading} error={error} albums={albums} />
+
+      {!userAccessToken ? (
+        <button onClick={handleLogin}>Login with Spotify</button>
+      ) : (
+        <button onClick={handleSaveAlbums} disabled={albumIds.length === 0}>
+          Save albums to library
+        </button>
+      )}
+
+      <button
+        onClick={() => sendToQueue(trackTest, userAccessToken)}
+        disabled={!trackTest || !userAccessToken}
+      >
+        Add to Queue
+      </button>
+
+      {saveStatus && <p>{saveStatus}</p>}
     </main>
   )
 }
