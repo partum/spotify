@@ -7,7 +7,7 @@ import {
   sendToQueue,
   saveAlbumsToLibrary,
 } from './spotifyApi'
-import { redirectToAuthCodeFlow, handleCallbackRedirect } from './loginScript'
+import { redirectToAuthCodeFlow } from './loginScript'
 import './App.css'
 import AlbumList from './components/AlbumList'
 
@@ -65,22 +65,8 @@ function App() {
     }
   }, [clientId, clientSecret])
 
-  useEffect(() => {
-    async function initUserToken() {
-      if (userAccessToken) return
-      try {
-        const token = await handleCallbackRedirect()
-        if (token) {
-          setUserAccessToken(token)
-          window.localStorage.setItem('user_access_token', token)
-        }
-      } catch (err) {
-        setError(err.message)
-      }
-    }
-
-    initUserToken()
-  }, [userAccessToken])
+  // Token is loaded from localStorage on mount via useState initializer
+  // CallbackPage handles the OAuth redirect and token exchange
 
   useEffect(() => {
     if (!accessToken || !artist) return
