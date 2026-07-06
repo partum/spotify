@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { handleCallbackRedirect } from '../loginScript'
 
-export default function CallbackPage() {
+export default function Callback() {
   const navigate = useNavigate()
   const [error, setError] = useState(null)
   const [isProcessing, setIsProcessing] = useState(true)
@@ -30,6 +30,7 @@ export default function CallbackPage() {
 
   return (
     <div className="callback-page">
+      <p>test</p>
       {isProcessing && <p>Processing your login...</p>}
       {error && <p className="error">{error}</p>}
     </div>
