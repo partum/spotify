@@ -213,12 +213,6 @@ function App() {
         </button>
       )}
 
-      <button
-        onClick={() => sendToQueue(trackTest, userAccessToken)}
-        disabled={!trackTest || !userAccessToken}
-      >
-        Add to Queue
-      </button>
 
       {saveStatus && <p>{saveStatus}</p>}
     </main>
