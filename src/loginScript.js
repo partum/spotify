@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 const redirectUri = `${window.location.origin}/callback`;
 
 export async function handleCallbackRedirect() {
@@ -69,7 +71,11 @@ export async function getAccessToken(clientId, code) {
     return access_token; 
 }
 
-  const getRefreshToken = async () => { //i think I need to check if the token is expired
+  
+
+  //get refresh
+  useEffect(() => {
+const getRefreshToken = async () => { //i think I need to check if the token is expired
 
    // refresh token that has been previously stored
    const refreshToken = localStorage.getItem('refresh_token');
@@ -105,3 +111,8 @@ export async function getAccessToken(clientId, code) {
      localStorage.setItem('refresh_token', response.refresh_token);
    }
   }
+  //set interval for refresh (in milliseconds)
+  const intervalId = setInterval(getRefreshToken, 3600000);
+  // 3. Clean up the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []);
