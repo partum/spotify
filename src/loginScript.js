@@ -1,11 +1,18 @@
 
 
-const redirectUri = `${window.location.origin}/callback`;
+function getRedirectUri() {
+  return import.meta.env.VITE_REDIRECT_URI || `${window.location.origin}/callback`
+}
 
 export async function handleCallbackRedirect() {
   const params = new URLSearchParams(window.location.search)
   const code = params.get('code')
+  const error = params.get('error')
   const clientId = import.meta.env.VITE_CLIENT_ID
+
+  if (error) {
+    throw new Error(`Spotify authorization failed: ${error}`)
+  }
 
   if (!code || !clientId) return null
 
@@ -23,7 +30,7 @@ export async function redirectToAuthCodeFlow(clientId) {
     const params = new URLSearchParams();
     params.append("client_id", clientId);
     params.append("response_type", "code");
-    params.append("redirect_uri", redirectUri);
+    params.append("redirect_uri", getRedirectUri());
     params.append("scope", "user-read-private user-read-email user-modify-playback-state user-library-modify");
     params.append("code_challenge_method", "S256");
     params.append("code_challenge", challenge);
@@ -58,7 +65,7 @@ export async function getAccessToken(clientId, code) {
   params.append('client_id', clientId)
   params.append('grant_type', 'authorization_code')
   params.append('code', code)
-  params.append('redirect_uri', redirectUri)
+  params.append('redirect_uri', getRedirectUri())
   params.append('code_verifier', verifier)
 
   const result = await fetch('https://accounts.spotify.com/api/token', {
