@@ -71,5 +71,17 @@ export async function getAccessToken(clientId, code) {
     return access_token;
 }
 
+//check for expiration
+export async function checkTokenExpiration() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const clientId = import.meta.env.VITE_CLIENT_ID;
 
+    if (!code || !clientId) return null;
+
+    const accessToken = await getAccessToken(clientId, code);
+    const expiresAt = Date.now() + accessToken.expires_in * 1000; // Convert expires_in to milliseconds
+    if (Date.now() >= expiresAt) {
+        console.log("Access token has expired. Redirecting to login...");
+}}
 

@@ -7,7 +7,7 @@ import {
   sendToQueue,
   saveAlbumsToLibrary,
 } from './spotifyApi'
-import { redirectToAuthCodeFlow } from './loginScript'
+import { redirectToAuthCodeFlow, checkTokenExpiration } from './loginScript'
 import './App.css'
 import AlbumList from './components/AlbumList'
 import TokenRefresh from './components/TokenRefresh'
@@ -192,6 +192,7 @@ function App() {
       setLoading(false)
     }
   }
+  checkTokenExpiration();
 
   return (
     <main className="app">
