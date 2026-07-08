@@ -10,7 +10,6 @@ import {
 import { redirectToAuthCodeFlow, checkTokenExpiration } from './loginScript'
 import './App.css'
 import AlbumList from './components/AlbumList'
-import TokenRefresh from './components/TokenRefresh'
 
 function App() {
   const [accessToken, setAccessToken] = useState(() => window.localStorage.getItem('access_token') || '')
@@ -206,7 +205,6 @@ function App() {
         />
       </form>
       <AlbumList loading={loading} error={error} albums={albums} />
-      <TokenRefresh />
 
       {!userAccessToken ? (
         <button onClick={handleLogin}>Login with Spotify</button>
