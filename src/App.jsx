@@ -7,7 +7,7 @@ import {
   sendToQueue,
   saveAlbumsToLibrary,
 } from './spotifyApi'
-import { redirectToAuthCodeFlow, checkTokenExpiration } from './loginScript'
+import { redirectToAuthCodeFlow, refreshUserTokenIfNeeded } from './loginScript'
 import './App.css'
 import AlbumList from './components/AlbumList'
 
@@ -191,7 +191,24 @@ function App() {
       setLoading(false)
     }
   }
-  checkTokenExpiration();
+
+  useEffect(() => {
+    async function validateLoginToken() {
+      if (!userAccessToken) return
+
+      try {
+        const refreshedToken = await refreshUserTokenIfNeeded()
+        if (refreshedToken && refreshedToken !== userAccessToken) {
+          setUserAccessToken(refreshedToken)
+        }
+      } catch (err) {
+        setError(err.message)
+        setUserAccessToken('')
+      }
+    }
+
+    validateLoginToken()
+  }, [userAccessToken])
 
   return (
     <main className="app">
