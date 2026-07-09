@@ -7,7 +7,7 @@ import {
   sendToQueue,
   saveAlbumsToLibrary,
 } from './spotifyApi'
-import { redirectToAuthCodeFlow, refreshUserTokenIfNeeded } from './loginScript'
+import { redirectToAuthCodeFlow, refreshUserTokenIfNeeded, clearUserTokens } from './loginScript'
 import './App.css'
 import AlbumList from './components/AlbumList'
 
@@ -192,6 +192,18 @@ function App() {
     }
   }
 
+  function handleLogout() {
+    clearUserTokens()
+    setUserAccessToken('')
+    setAlbums([])
+    setAlbumIds([])
+    setArtist('')
+    setNext(null)
+    setTrackTest(null)
+    setSaveStatus('')
+    setError(null)
+  }
+
   useEffect(() => {
     let isCancelled = false
 
@@ -235,9 +247,14 @@ function App() {
       {!userAccessToken ? (
         <button onClick={handleLogin}>Login with Spotify</button>
       ) : (
-        <button onClick={handleSaveAlbums} disabled={albumIds.length === 0}>
-          Save albums to library
-        </button>
+        <>
+          <button onClick={handleSaveAlbums} disabled={albumIds.length === 0}>
+            Save albums to library
+          </button>
+          <button onClick={handleLogout} style={{ marginLeft: '0.5rem' }}>
+            Log out
+          </button>
+        </>
       )}
 
 

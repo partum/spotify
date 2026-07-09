@@ -73,7 +73,7 @@ export function saveAlbumsToLibrary(albumIds, accessToken) {
   }
 
   const encodedIds = encodeURIComponent(albumIds.join(','))
-  return callSpotifyApi(`/me/albums?ids=${encodedIds}`, accessToken, 'PUT')
+  return callSpotifyApi(`/me/albums?ids=${encodedIds}`, accessToken, 'PUT', null)
 }
 
 export function getCurrentUserProfile(accessToken) {
