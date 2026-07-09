@@ -193,22 +193,31 @@ function App() {
   }
 
   useEffect(() => {
+    let isCancelled = false
+
     async function validateLoginToken() {
-      if (!userAccessToken) return
+      const savedToken = window.localStorage.getItem('user_access_token')
+      if (!savedToken) return
 
       try {
         const refreshedToken = await refreshUserTokenIfNeeded()
-        if (refreshedToken && refreshedToken !== userAccessToken) {
+        if (!isCancelled && refreshedToken) {
           setUserAccessToken(refreshedToken)
         }
       } catch (err) {
-        setError(err.message)
-        setUserAccessToken('')
+        if (!isCancelled) {
+          setError(err.message)
+          setUserAccessToken('')
+        }
       }
     }
 
     validateLoginToken()
-  }, [userAccessToken])
+
+    return () => {
+      isCancelled = true
+    }
+  }, [])
 
   return (
     <main className="app">
